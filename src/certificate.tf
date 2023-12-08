@@ -3,6 +3,8 @@ locals {
   alphanumeric_name = substr(replace(var.md_metadata.name_prefix, "/[^a-z0-9]/", ""), 0, local.max_length)
 }
 
+# This is trying to generate the certificates needed for Azure VPN. Not quite working yet. Still trying to figure out how to create the certificate pair for public/private key. Also need to figure out a way to make the certificates downloadable through the artifact.
+
 resource "azurerm_resource_group" "certificate" {
   count    = var.gateway.auth_type == "Certificate" ? 1 : 0
   name     = var.md_metadata.name_prefix

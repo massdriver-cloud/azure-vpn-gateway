@@ -4,6 +4,8 @@ resource "utility_available_cidr" "dns_resolver" {
   mask       = 28
 }
 
+# DNS resolver is required as this is the component that resolves DNS requests. Without this, only way to connect to resources is using private IP address. https://learn.microsoft.com/en-us/azure/architecture/example-scenario/networking/azure-dns-private-resolver
+
 resource "azurerm_private_dns_resolver" "dns_resolver" {
   name                = var.md_metadata.name_prefix
   resource_group_name = local.vnet_resource_group

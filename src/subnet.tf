@@ -10,6 +10,7 @@ data "azurerm_subnet" "lookup" {
   resource_group_name  = local.vnet_resource_group
 }
 
+# Name of subnet must be GatewaySubnet or Azure VPN Gateway will not work.
 resource "azurerm_subnet" "gateway" {
   name                 = "GatewaySubnet"
   resource_group_name  = local.vnet_resource_group

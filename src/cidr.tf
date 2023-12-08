@@ -3,6 +3,12 @@ locals {
   token          = lookup(local.token_response, "access_token", "")
 }
 
+/* Gateway subnet configuration recommendations: https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-about-vpn-gateway-settings#gwsub
+
+Recommends /27 for gateway subnet.
+
+What this is IaC is doing is looking at subnets within the VNet to find a /27 CIDR range that isn't being used, and then using it. It's also creating a VPN address pool to associate with the VNet gateway to give IP addresses to VPN client users. The address pool isn't related to subnets, it just needs to be in a CIDR range that doesn't conflict with other VNets. */
+
 resource "utility_available_cidr" "gateway" {
   count      = var.network.auto ? 1 : 0
   from_cidrs = data.azurerm_virtual_network.lookup.address_space
