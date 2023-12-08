@@ -1,7 +1,7 @@
-# resource "massdriver_artifact" "<name>" {
-#   field                = "the field in the artifacts schema"
-#   provider_resource_id = "AWS ARN or K8S SelfLink"
-#   name                 = "a contextual name for the artifact"
+# resource "massdriver_artifact" "xml" {
+#   field                = "xml"
+#   provider_resource_id = azurerm_virtual_network_gateway.main.id
+#   name                 = "Azure VPN Configuration Profile for ${var.md_metadata.name_prefix}"
 #   artifact = jsonencode(
 #     {
 #       # data = {

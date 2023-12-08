@@ -2,7 +2,7 @@ schema: draft-07
 name: "azure-vpn-gateway"
 description: "Azure VPN Gateway is a service that uses a specific type of virtual network gateway to send encrypted traffic between an Azure virtual network and on-premises locations over the public Internet."
 source_url: github.com/massdriver-cloud/azure-vpn-gateway
-access: private
+access: public
 type: infrastructure
 
 params:
@@ -28,10 +28,11 @@ params:
         auth_type:
           type: string
           title: Authentication Type
-          description: The authentication type to use for the VPN connection. **If using Microsoft Entra ID, be sure to authorize the Azure VPN app in your Azure account [here](https://login.microsoftonline.com/common/oauth2/authorize?client_id=41b23e61-6c1e-4545-b367-cd054e0ed4b4&response_type=code&redirect_uri=https://portal.azure.com&nonce=1234&prompt=admin_consent).**
+          description: The authentication type to use for the VPN connection. **If using Microsoft Entra ID, be sure to authorize the Azure VPN app in your Azure account [here](https://login.microsoftonline.com/common/oauth2/authorize?client_id=41b23e61-6c1e-4545-b367-cd054e0ed4b4&response_type=code&redirect_uri=https://portal.azure.com&nonce=1234&prompt=admin_consent).** The authentication type **cannot be changed** after deployment.
+          $md.immutable: true
           oneOf:
-            - title: Certificate
-              const: Certificate
+            # - title: Certificate
+            #   const: Certificate
             - title: Microsoft Entra ID
               const: AAD
       dependencies:

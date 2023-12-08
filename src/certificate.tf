@@ -38,7 +38,9 @@ resource "azurerm_key_vault" "certificate" {
       "Create",
       "Import",
       "Update",
-      "Delete"
+      "Delete",
+      "Recover",
+      "Restore"
     ]
 
     secret_permissions = [
