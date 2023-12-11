@@ -1,4 +1,10 @@
 {
-    "__comment": "TODO: populate this document to put restrictions on provisioner actions. this comment can optionally be removed or used to explain the specified restrictions.",
-    "do_not_delete": []
+    "do_not_delete": [
+        "azurerm_virtual_network_gateway.main",
+        "azurerm_public_ip.main",
+        "azurerm_subnet.gateway",
+        "azurerm_private_dns_resolver.dns_resolver",
+        "azurerm_private_dns_resolver_inbound_endpoint.dns_resolver",
+        "azurerm_subnet.dns_resolver"
+    ]
 }
