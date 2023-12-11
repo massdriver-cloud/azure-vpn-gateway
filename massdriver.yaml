@@ -1,0 +1,172 @@
+schema: draft-07
+name: "azure-vpn-gateway"
+description: "Azure VPN Gateway is a service that uses a specific type of virtual network gateway to send encrypted traffic between an Azure virtual network and on-premises locations over the public Internet."
+source_url: github.com/massdriver-cloud/azure-vpn-gateway
+access: public
+type: infrastructure
+
+params:
+  required:
+    - gateway
+    - network
+  properties:
+    gateway:
+      type: object
+      title: Gateway Configuration
+      description: "**Provisioning of the VPN Gateway takes approximately 30-60 minutes.**"
+      required:
+        - generation
+        - auth_type
+      properties:
+        generation:
+          type: string
+          title: Gateway Generation
+          description: The generation for the VPN gateway. [Learn more](https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-about-vpn-gateway-settings#gateway-sku-by-performance).
+          enum:
+            - Generation1
+            - Generation2
+        auth_type:
+          type: string
+          title: Authentication Type
+          description: The authentication type to use for the VPN connection. **If using Microsoft Entra ID, be sure to authorize the Azure VPN app in your Azure account [here](https://login.microsoftonline.com/common/oauth2/authorize?client_id=41b23e61-6c1e-4545-b367-cd054e0ed4b4&response_type=code&redirect_uri=https://portal.azure.com&nonce=1234&prompt=admin_consent).** The authentication type **cannot be changed** after deployment.
+          $md.immutable: true
+          oneOf:
+            # - title: Certificate
+            #   const: Certificate
+            - title: Microsoft Entra ID
+              const: AAD
+      dependencies:
+        generation:
+          oneOf:
+            - properties:
+                generation:
+                  const: Generation1
+                sku:
+                  type: string
+                  title: Gateway SKU
+                  description: The SKU of the VPN gateway. [Learn more](https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-about-vpn-gateway-settings#benchmark).
+                  enum:
+                    - VpnGw1
+                    - VpnGw2
+                    - VpnGw3
+                    - VpnGw1AZ
+                    - VpnGw2AZ
+                    - VpnGw3AZ
+              required:
+                - sku
+            - properties:
+                generation:
+                  const: Generation2
+                sku:
+                  type: string
+                  title: Gateway SKU
+                  description: The SKU of the VPN gateway. [Learn more](https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-about-vpn-gateway-settings#benchmark).
+                  enum:
+                    - VpnGw2
+                    - VpnGw3
+                    - VpnGw4
+                    - VpnGw5
+                    - VpnGw2AZ
+                    - VpnGw3AZ
+                    - VpnGw4AZ
+                    - VpnGw5AZ
+              required:
+                - sku
+    network:
+      type: object
+      title: Networking
+      properties:
+        auto:
+          title: Automatic CIDR Selection
+          type: boolean
+          description: Enabling this will automatically select an available CIDR range for your database. Unchecking will require you to specify the CIDR.
+          default: true
+          $md.immutable: true
+      dependencies:
+        auto:
+          oneOf:
+          - properties:
+              auto:
+                const: true
+              mask:
+                title: Gateway address pool size
+                type: integer
+                description: Specify the number of addresses in the gateway address pool. The size cannot be changed after creation.
+                $md.immutable: true
+                default: 24
+                oneOf:
+                  - const: 13
+                    title: 524k IP Addresses
+                  - const: 14
+                    title: 262k IP Addresses
+                  - const: 15
+                    title: 131k IP Addresses
+                  - const: 16
+                    title: 65k IP Addresses
+                  - const: 17
+                    title: 32k IP Addresses
+                  - const: 18
+                    title: 16k IP Addresses
+                  - const: 19
+                    title: 8k IP Addresses
+                  - const: 20
+                    title: 4k IP Addresses
+                  - const: 21
+                    title: 2k IP Addresses
+                  - const: 22
+                    title: 1k IP Addresses
+                  - const: 23
+                    title: 512 IP Addresses
+                  - const: 24
+                    title: 256 IP Addresses
+                  - const: 25
+                    title: 128 IP Addresses
+                  - const: 26
+                    title: 64 IP Addresses
+                  - const: 27
+                    title: 32 IP Addresses
+                  - const: 28
+                    title: 16 IP Addresses
+                  - const: 29
+                    title: 8 IP Addresses
+                  - const: 30
+                    title: 4 IP Addresses
+            required:
+              - mask
+          - properties:
+              auto:
+                const: false
+              pool_cidr:
+                title: Gateway address pool CIDR
+                type: string
+                description: Specify a VPN gateway address pool CIDR range within your VNet. The CIDR cannot be changed after creation.
+                $md.immutable: true
+                $ref: https://raw.githubusercontent.com/massdriver-cloud/artifact-definitions/main/definitions/types/cidr.json
+            required:
+              - pool_cidr
+
+connections:
+  required:
+    - azure_virtual_network
+    - azure_service_principal
+  properties:
+    azure_service_principal:
+      $ref: massdriver/azure-service-principal
+    azure_virtual_network:
+      $ref: massdriver/azure-virtual-network
+
+ui:
+  ui:order:
+    - gateway
+    - network
+    - "*"
+  gateway:
+    ui:order:
+      - auth_type
+      - generation
+      - sku
+      - "*"
+  network:
+    ui:order:
+      - auto
+      - "*"
