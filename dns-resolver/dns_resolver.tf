@@ -1,3 +1,9 @@
+# DNS resolver is required as this is the component that resolves DNS requests.
+# Without this, only way to connect to resources is using private IP address.
+# https://learn.microsoft.com/en-us/azure/architecture/example-scenario/networking/azure-dns-private-resolver
+
+# Multi-step build is required as there are 2 subnets provisioning in this bundle, and single step causes CIDR collision.
+
 locals {
   split_vnet_id       = split("/", var.azure_virtual_network.data.infrastructure.id)
   vnet_name           = element(local.split_vnet_id, length(local.split_vnet_id) - 1)
@@ -21,10 +27,6 @@ resource "utility_available_cidr" "dns_resolver" {
   used_cidrs = flatten([for subnet in data.azurerm_subnet.lookup : subnet.address_prefixes])
   mask       = 28
 }
-
-# DNS resolver is required as this is the component that resolves DNS requests.
-# Without this, only way to connect to resources is using private IP address.
-# https://learn.microsoft.com/en-us/azure/architecture/example-scenario/networking/azure-dns-private-resolver
 
 resource "azurerm_private_dns_resolver" "dns_resolver" {
   name                = var.md_metadata.name_prefix
