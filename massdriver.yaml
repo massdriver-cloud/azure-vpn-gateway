@@ -5,6 +5,12 @@ source_url: github.com/massdriver-cloud/azure-vpn-gateway
 access: public
 type: infrastructure
 
+steps:
+  - path: src
+    provisioner: terraform
+  - path: dns-resolver
+    provisioner: terraform
+
 params:
   required:
     - gateway
