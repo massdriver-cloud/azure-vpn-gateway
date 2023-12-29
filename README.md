@@ -55,6 +55,7 @@ Form input parameters for configuring a bundle for deployment.
 - **`gateway`** *(object)*: **Provisioning of the VPN Gateway takes approximately 30-60 minutes.**.
   - **`auth_type`** *(string)*: The authentication type to use for the VPN connection. **If using Microsoft Entra ID, be sure to authorize the Azure VPN app in your Azure account [here](https://login.microsoftonline.com/common/oauth2/authorize?client_id=41b23e61-6c1e-4545-b367-cd054e0ed4b4&response_type=code&redirect_uri=https://portal.azure.com&nonce=1234&prompt=admin_consent).** The authentication type **cannot be changed** after deployment.
     - **One of**
+      - Certificate
       - Microsoft Entra ID
   - **`generation`** *(string)*: The generation for the VPN gateway. [Learn more](https://learn.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-about-vpn-gateway-settings#gateway-sku-by-performance). Must be one of: `['Generation1', 'Generation2']`.
 - **`network`** *(object)*
@@ -141,6 +142,8 @@ Resources created by this bundle that can be connected to other bundles.
 <summary>View</summary>
 
 <!-- ARTIFACTS:START -->
+## Properties
+
 <!-- ARTIFACTS:END -->
 
 </details>
