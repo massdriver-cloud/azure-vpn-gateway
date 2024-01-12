@@ -21,14 +21,19 @@ data "azurerm_client_config" "certificate" {
 resource "tls_private_key" "root_certificate" {
   count     = var.gateway.auth_type == "Certificate" ? 1 : 0
   algorithm = "RSA"
-  rsa_bits  = 4096
+  rsa_bits  = 2048
 }
 
 resource "tls_self_signed_cert" "root_certificate" {
   count                 = var.gateway.auth_type == "Certificate" ? 1 : 0
-  private_key_pem       = file(tls_private_key.root_certificate[0].private_key_pem)
+  private_key_pem       = tls_private_key.root_certificate[0].private_key_pem
   is_ca_certificate     = true
   validity_period_hours = 8760 # 1 year
+
+  subject {
+    common_name  = "massdriver.cloud"
+    organization = "Massdriver"
+  }
 
   allowed_uses = [
     "cert_signing",
@@ -84,81 +89,133 @@ resource "azurerm_key_vault" "certificate" {
     ]
   }
 
-
   network_acls {
     default_action = "Allow"
     bypass         = "AzureServices"
   }
 }
 
-resource "azurerm_key_vault_certificate" "certificate" {
+# resource "azurerm_key_vault_certificate" "certificate" {
+#   count        = var.gateway.auth_type == "Certificate" ? 1 : 0
+#   name         = "vpn-root-certificate"
+#   key_vault_id = azurerm_key_vault.certificate[0].id
+#   tags         = var.md_metadata.default_tags
+
+#   # certificate {
+#   #   contents = tls_self_signed_cert.root_certificate[0].cert_pem
+#   # }
+
+#   certificate_policy {
+#     issuer_parameters {
+#       name = "Self"
+#     }
+
+#     key_properties {
+#       exportable = true
+#       key_type   = "RSA"
+#       key_size   = 2048
+#       reuse_key  = true
+#     }
+
+#     lifetime_action {
+#       action {
+#         action_type = "AutoRenew"
+#       }
+
+#       trigger {
+#         days_before_expiry = 30
+#       }
+#     }
+
+#     secret_properties {
+#       content_type = "application/x-pkcs12"
+#     }
+
+#     x509_certificate_properties {
+#       extended_key_usage = ["1.3.6.1.5.5.7.3.1"]
+
+#       key_usage = [
+#         "cRLSign",
+#         "dataEncipherment",
+#         "digitalSignature",
+#         "keyAgreement",
+#         "keyCertSign",
+#         "keyEncipherment",
+#       ]
+
+#       subject            = "CN=RootCertificate"
+#       validity_in_months = 12
+#     }
+#   }
+
+#   depends_on = [azurerm_key_vault.certificate]
+# }
+
+resource "azurerm_key_vault_secret" "root_private_key" {
   count        = var.gateway.auth_type == "Certificate" ? 1 : 0
-  name         = "vpn-root-certificate"
+  name         = "root-private-key"
+  value        = tls_private_key.root_certificate[0].private_key_pem
   key_vault_id = azurerm_key_vault.certificate[0].id
   tags         = var.md_metadata.default_tags
-
-  certificate {
-    contents = tls_self_signed_cert.root_certificate[0].cert_pem
-  }
-
-  # certificate_policy {
-  #   issuer_parameters {
-  #     name = "Self"
-  #   }
-
-  #   key_properties {
-  #     exportable = true
-  #     key_type   = "RSA"
-  #     key_size   = 2048
-  #     reuse_key  = false
-  #   }
-
-  #   lifetime_action {
-  #     action {
-  #       action_type = "AutoRenew"
-  #     }
-
-  #     trigger {
-  #       days_before_expiry = 30
-  #     }
-  #   }
-
-  #   secret_properties {
-  #     content_type = "application/x-pem-file"
-  #   }
-
-  #   x509_certificate_properties {
-  #     extended_key_usage = ["1.3.6.1.5.5.7.3.1"]
-
-  #     key_usage = [
-  #       "cRLSign",
-  #       "dataEncipherment",
-  #       "digitalSignature",
-  #       "keyAgreement",
-  #       "keyCertSign",
-  #       "keyEncipherment",
-  #     ]
-
-  #     subject            = "CN=RootCertificate"
-  #     validity_in_months = 12
-  #   }
-  # }
-  depends_on = [azurerm_key_vault.certificate]
 }
+
+resource "azurerm_key_vault_secret" "root_certificate" {
+  count        = var.gateway.auth_type == "Certificate" ? 1 : 0
+  name         = "root-certificate"
+  value        = tls_self_signed_cert.root_certificate[0].cert_pem
+  key_vault_id = azurerm_key_vault.certificate[0].id
+  tags         = var.md_metadata.default_tags
+}
+
+resource "tls_private_key" "client_certificate" {
+  count     = var.gateway.auth_type == "Certificate" ? 1 : 0
+  algorithm = "RSA"
+  rsa_bits  = 2048
+}
+
+resource "azurerm_key_vault_secret" "client_certificate" {
+  count        = var.gateway.auth_type == "Certificate" ? 1 : 0
+  name         = var.md_metadata.name_prefix
+  value        = tls_private_key.client_certificate[0].private_key_pem
+  key_vault_id = azurerm_key_vault.certificate[0].id
+  tags         = var.md_metadata.default_tags
+}
+
+# data "azurerm_key_vault_certificate_data" "certificate" {
+#   count        = var.gateway.auth_type == "Certificate" ? 1 : 0
+#   name         = azurerm_key_vault_certificate.certificate[0].name
+#   key_vault_id = azurerm_key_vault.certificate[0].id
+# }
+
+
+# data "azurerm_key_vault_secret" "certificate" {
+#   count        = var.gateway.auth_type == "Certificate" ? 1 : 0
+#   name         = azurerm_key_vault_certificate.certificate[0].name
+#   key_vault_id = azurerm_key_vault.certificate[0].id
+# }
 
 resource "tls_cert_request" "client_certificate" {
   count           = var.gateway.auth_type == "Certificate" ? 1 : 0
-  private_key_pem = azurerm_key_vault_certificate.certificate[0].certificate_data_base64
+  private_key_pem = tls_private_key.client_certificate[0].private_key_pem
 }
 
 resource "tls_locally_signed_cert" "client_certificate" {
   count                 = var.gateway.auth_type == "Certificate" ? 1 : 0
   cert_request_pem      = tls_cert_request.client_certificate[0].cert_request_pem
-  ca_private_key_pem    = azurerm_key_vault_certificate.certificate[0].certificate_data_base64
-  ca_cert_pem           = tls_self_signed_cert.root_certificate[0].cert_pem
+  ca_private_key_pem    = azurerm_key_vault_secret.root_private_key[0].value
+  ca_cert_pem           = azurerm_key_vault_secret.root_certificate[0].value
   validity_period_hours = 8760 # 1 year
 
   allowed_uses = [
-    "client_auth"
+    "client_auth",
+    "key_encipherment",
+    "digital_signature"
   ]
+}
+
+resource "local_file" "client-certificate" {
+  count           = var.gateway.auth_type == "Certificate" ? 1 : 0
+  content         = tls_locally_signed_cert.client_certificate[0].cert_pem
+  filename        = "./client-cert.pem"
+  file_permission = "0666"
 }
