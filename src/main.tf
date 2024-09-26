@@ -39,8 +39,8 @@ resource "azurerm_virtual_network_gateway" "main" {
       vpn_auth_types       = ["Certificate"]
       vpn_client_protocols = ["IkeV2", "OpenVPN"]
       root_certificate {
-        name             = "ClientRootCertificate"
-        public_cert_data = azurerm_key_vault_certificate.certificate[0].certificate_data_base64
+        name             = "VpnRootCertificate"
+        public_cert_data = base64encode(tls_self_signed_cert.root_certificate[0].cert_pem)
       }
     }
   }
