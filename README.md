@@ -17,7 +17,7 @@ Azure VPN Gateway is a service that uses a specific type of virtual network gate
 
 ## Design
 
-For detailed information, check out our [Operator Guide](operator.mdx) for this bundle.
+For detailed information, check out our [Operator Guide](operator.md) for this bundle.
 
 ## Usage
 
