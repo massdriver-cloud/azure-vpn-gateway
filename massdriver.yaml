@@ -3,7 +3,6 @@ name: azure-vpn-gateway
 version: 1.0.0
 description: Azure VPN Gateway is a service that uses a specific type of virtual network gateway to send encrypted traffic between an Azure virtual network and on-premises locations over the public Internet.
 source_url: https://github.com/massdriver-cloud/azure-vpn-gateway
-type: application
 steps:
 - path: src
   provisioner: opentofu
